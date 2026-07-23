@@ -1,0 +1,59 @@
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nimbus-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:latest
+    container_name: nimbus-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  backend:
+    build: ./backend
+    container_name: nimbus-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - MONGO_URI=mongodb://mongodb:27017/nimbus
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+    depends_on:
+      - postgres
+      - mongodb
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: ["sh", "-c", "until npx prisma migrate deploy; do echo 'Database not ready, retrying in 3s...'; sleep 3; done && (npm run seed || true) && npm start"]
+
+  frontend:
+    build: ./frontend
+    container_name: nimbus-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
+  mongodata:

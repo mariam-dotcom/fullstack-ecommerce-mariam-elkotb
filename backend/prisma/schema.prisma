@@ -1,0 +1,73 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+enum AccountRole {
+  SHOPPER
+  MANAGER
+}
+
+model Account {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  passwordHash String
+  displayName  String
+  role         AccountRole  @default(SHOPPER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  basketItems  BasketItem[]
+  ratings      Rating[]
+}
+
+model Collection {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  blurb       String?
+  items       Item[]
+}
+
+model Item {
+  id           Int          @id @default(autoincrement())
+  title        String
+  summary      String?
+  priceCents   Int
+  stockCount   Int          @default(0)
+  imagePath    String?
+  collectionId Int
+  collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  basketItems  BasketItem[]
+  ratings      Rating[]
+}
+
+model BasketItem {
+  id        Int      @id @default(autoincrement())
+  accountId Int
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, itemId])
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  stars     Int
+  note      String
+  accountId Int
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

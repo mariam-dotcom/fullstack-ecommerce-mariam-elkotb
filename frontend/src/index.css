@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Signature element: a physical-tag styled price chip.
+     The circular notch on the left evokes a punched paper price tag. */
+  .price-tag {
+    @apply relative inline-flex items-center gap-2 rounded-r-md bg-ink text-paper
+           font-mono text-sm font-medium pl-4 pr-3 py-1;
+  }
+  .price-tag::before {
+    content: '';
+    @apply absolute -left-1 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-paper;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md bg-amber px-4 py-2
+           text-sm font-semibold text-ink transition hover:brightness-95
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md border border-ink/15 px-4 py-2
+           text-sm font-semibold text-ink transition hover:bg-ink/5
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+  }
+  .field {
+    @apply w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm
+           focus:border-ink focus:outline-none;
+  }
+}
